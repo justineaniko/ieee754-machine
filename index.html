@@ -56,7 +56,12 @@
         <label for="rounding-input">Enter decimal or binary number:</label>
         <input type="text" id="rounding-input" placeholder="Decimal or Binary number">
 
-        <label for="digits-input">Enter number of digits to round to:</label>
+        <div class="format-toggle">
+            <label><input type="radio" name="rounding-format" value="decimal" checked> Decimal</label>
+            <label><input type="radio" name="rounding-format" value="binary"> Binary</label>
+        </div>
+
+        <label for="digits-input">Enter number of digits (mantissa bits) to round to:</label>
         <input type="number" id="digits-input" placeholder="Number of digits">
 
         <button id="round-btn">Round</button>
@@ -98,6 +103,7 @@
     </div>
 
     <script src="js/convertDecimal.js"></script>
+    <script src="js/rounding.js"></script>
 
 </body>
 </html>
