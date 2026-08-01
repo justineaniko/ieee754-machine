@@ -1,1 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BitByBit - IEEE754 Converter</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="header">
+        <h1>BitByBit</h1>
+        <h2>An IEEE754 Converter</h2>
+    </div>
+
+    <nav class="navbar">
+        <a href="#home">Home</a>
+        <a href="#d_to_b">Decimal to Binary</a>
+        <a href="#rounding">Rounding</a>
+        <a href="#arithmetic">Arithmetic</a>
+    </nav>
+
+    <div class="home" id="home">
+        <h2>Welcome to BitByBit</h2>
+        <p>This tool allows you to convert decimal numbers to IEEE754 format and vice versa. You can also explore rounding methods and perform arithmetic operations on IEEE754 numbers.</p>
+        <p>To get started, select any of the three buttons below or pick one from the headers tab.</p>
+        <a href="#d_to_b" class="home-btn">Convert Decimal to Binary</a>
+        <a href="#rounding" class="home-btn">Rounding</a>
+        <a href="#arithmetic" class="home-btn">Arithmetic</a>
+        <p><strong>What is IEEE 754?</strong> It's the standard format computers use to represent floating-point numbers in binary, using a sign bit, exponent, and mantissa.</p>
+        <p><em>Supports:</em> negative numbers, decimals, and special values (NaN, Infinity, ±0, denormals).</p>
+    </div>
+
+    <div class="d_to_b" id = "d_to_b">
+        <h3>Convert Decimal to Binary</h3>
+
+        <label for="decimal-input">Enter decimal number:</label>
+        <input type="number" id="decimal-input" placeholder="Decimal number">
+        <button id="convert-btn">Convert</button>
+
+        <div class = "output">
+            <p> Sign: <span id = "sign-output"></span></p>
+            <p> Exponent: <span id = "exponent-output"></span></p>
+            <p> Mantissa: <span id = "mantissa-output"></span></p>
+            <p> Binary: <span id = "binary-output"></span></p>
+            <p> Hex: <span id = "hex-output"></span></p>
+        </div>
+
+        <a href="#home" class="back-link">&uarr; Back to Home</a>
+    </div>
+
+    <div class="rounding" id = "rounding">
+        <h3>Rounding</h3>
+
+        <label for="rounding-input">Enter decimal or binary number:</label>
+        <input type="text" id="rounding-input" placeholder="Decimal or Binary number">
+
+        <label for="digits-input">Enter number of digits to round to:</label>
+        <input type="number" id="digits-input" placeholder="Number of digits">
+
+        <button id="round-btn">Round</button>
+
+        <div class = "output">
+            <p> Chop: <span id = "chop"></span></p>
+            <p> Round Up: <span id = "round-up"></span></p>
+            <p> Round Down: <span id = "round-down"></span></p>
+            <p> Round To Nearest (Ties to Even): <span id = "round-nearest"></span></p>
+        </div>
+
+        <a href="#home" class="back-link">&uarr; Back to Home</a>
+    </div>
+
+    <div class="arithmetic" id = "arithmetic">
+        <h3>Arithmetics</h3>
+
+        <label for="op-1">Operand 1</label>
+        <input type="number" id="op-1" placeholder="Operand 1">
+
+        <label for="op-2">Operand 2</label>
+        <input type="number" id="op-2" placeholder="Operand 2">
+
+        <label for="operation">Operation: </label>
+        <select id="operation">
+            <option value="add">Addition</option>
+            <option value="multiply">Multiplication</option>
+        </select>
+
+        <button id="compute-btn">Compute</button>
+
+        <div class = "output">
+            <p> Result (Binary): <span id = "binary"></span></p>
+            <p> Result (Hex): <span id = "hex"></span></p>
+            <p> Result (Decimal): <span id = "decimal"></span></p>
+        </div>
+
+        <a href="#home" class="back-link">&uarr; Back to Home</a>
+    </div>
+
+</body>
+</html>
