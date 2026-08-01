@@ -5,6 +5,8 @@ import { shouldRoundUp } from "./rounding.js";
 const TWO23 = 1n<< 23n;
 const TWO24= 1n << 24n;
 
+
+
 // this function gets the 32 bit float and breaks it into sign, exp and fraction fields. it checks if its normal or special and outputs an object with all these parts so we can use it later.
 function decode(bits) {
     // shift right 31 times to just get the 1 bit sign
@@ -310,6 +312,29 @@ function setupArithmeticPage() {
     const button = byId("compute-btn");
 
     if(!button) return;
+
+    // this function disables the hex radio button if the input doesnt look like a hex string. it also switches to decimal if the user typed garbage and hex was selected.
+    function wireFormatToggle(inputId, hexRadioId, decimalRadioId) {
+        const input = byId(inputId);
+        const hexRadio = byId(hexRadioId);
+        const decimalRadio = byId(decimalRadioId);
+        if (!input || !hexRadio || !decimalRadio) return;
+
+        input.addEventListener("input", () => {
+            const value = input.value.trim();
+            const looksHex = /^(0x)?[0-9a-f]{1,8}$/i.test(value);
+
+            hexRadio.disabled = !looksHex;
+
+            if (!looksHex && hexRadio.checked) {
+                decimalRadio.checked = true;
+            }
+        });
+    }
+
+    wireFormatToggle("op-1", "op1-format-hex", "op1-format-decimal");
+    wireFormatToggle("op-2", "op2-format-hex", "op2-format-decimal");
+
 
     // listen for the click event on the button
     button.addEventListener("click", () => {

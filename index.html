@@ -11,7 +11,7 @@
 <body>
     <div class="header">
         <h1>BitByBit</h1>
-        <h2>An IEEE-754 Converter</h2>
+        <h2>An IEEE-754 Machine</h2>
     </div>
 
     <nav class="navbar">
@@ -44,7 +44,7 @@
             <p> Exponent: <span id = "exponent-output"></span></p>
             <p> Mantissa: <span id = "mantissa-output"></span></p>
             <p> Binary: <span id = "binary-output"></span></p>
-            <p> Hex: <span id = "hex-output"></span></p>
+            <p> Hexadecimal: <span id = "hex-output"></span></p>
         </div>
 
         <a href="#home" class="back-link">&uarr; Back to Home</a>
@@ -81,9 +81,17 @@
 
         <label for="op-1">Operand 1</label>
         <input type="text" id="op-1" placeholder="Decimal or IEEE Hexadecimal">
+        <div class="format-toggle">
+            <label><input type="radio" name="opt1-format" id="opt1" value="decimal" checked> Decimal</label>
+            <label><input type="radio" name="opt1-format" id="opt1" value="hex"> Hexadecimal</label>
+        </div>
 
         <label for="op-2">Operand 2</label>
         <input type="text" id="op-2" placeholder="Decimal or IEEE Hexadecimal">
+        <div class="format-toggle">
+            <label><input type="radio" name="opt2-format" id="opt2" value="decimal" checked> Decimal</label>
+            <label><input type="radio" name="opt2-format" id="opt2" value="hex"> Hexadecimal</label>
+        </div>
 
         <label for="operation">Operation: </label>
         <select id="operation">
