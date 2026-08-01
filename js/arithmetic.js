@@ -2,8 +2,51 @@ import { convertDecimalToIEEE754 } from "./convertDecimal.js";
 import { shouldRoundUp } from "./rounding.js";
 
 // constants for math so we dont have to keep calculating 2^23 and 2^24
-const TWO23 = 1n<< 23n;
-const TWO24= 1n << 24n;
+const TWO23 = 8388608n;
+const TWO24= 16777216n;
+
+// this function returns 2 raised to the given whole number power.
+function powerOfTwo(power) {
+    return 2n ** BigInt(power);
+}
+
+// this function applies the sign of a floating point number to its coefficient.
+function signedCoefficient(number) {
+    return number.sign ? -number.coefficient : number.coefficient;
+}
+
+// this function moves a coefficient to the common power used during addition.
+function alignCoefficient(number, commonPower) {
+    return signedCoefficient(number) * powerOfTwo(number.power - commonPower);
+}
+
+// this function gets the actual unbiased exponent used in binary scientific notation.
+function unbiasedExponent(number) {
+    if(number.kind === "normal") {
+        return number.exponent - 127;
+    }
+
+    return -126;
+}
+
+// this function returns the significand of a floating point number in binary form.
+function significandForm(number) {
+    const fraction = number.fraction.toString(2).padStart(23, "0");
+    const hiddenBit = number.kind === "normal" ? "1" : "0";
+
+    return `${hiddenBit}.${fraction}`;
+}
+
+// this function displays a floating point number in binary scientific notation.
+function scientificForm(number) {
+    if(number.kind === "nan") return "NaN";
+    if(number.kind === "infinity") return number.sign ? "-Infinity" : "+Infinity";
+    if(number.kind === "zero") return number.sign ? "-0" : "+0";
+
+    const sign = number.sign ? "-" : "";
+
+    return `${sign}${significandForm(number)} x 2^${unbiasedExponent(number)}`;
+}
 
 // this function gets the 32 bit float and breaks it into sign, exp and fraction fields. it checks if its normal or special and outputs an object with all these parts so we can use it later.
 function decode(bits) {
@@ -59,10 +102,6 @@ function parseOperand(raw) {
     if (/^0x[0-9a-f]{8}$/i.test(text)) {
         return decode(parseInt(text.slice(2), 16) >>> 0);
     }
-    // check if its a raw hex string without 0x but has letters so we know its hex
-    if(/^[0-9a-f]{8}$/i.test(text) && /[a-f]/i.test(text)) {
-        return decode(parseInt(text, 16) >>> 0);
-    }
 
     // if its not a valid decimal number at this point, throw an error
     if(!/^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(text)) {
@@ -78,21 +117,36 @@ function parseOperand(raw) {
 function roundInteger(value, shift, sign) {
     // if shift is positive we just shift left and dont lose anything, so no rounding needed
     if (shift >= 0) {
-        return { value: value << BigInt(shift), note: "No rounding was needed." };
+        return { value: value * powerOfTwo(shift), note: "No bits were discarded, so no rounding was needed." };
     }
 
     // figure out what were dividing by to do the right shift
-    const divisor = 1n << BigInt(-shift);
+    const divisor = powerOfTwo(-shift);
 
     // kept is the part that stays, remainder is the bits that get chopped off
     const kept= value / divisor;
     const remainder = value% divisor;
+    const lastBit = Number(kept % 2n);
 
     // pass everything to the imported groupmate rounding function using the binary default
-    const increment = shouldRoundUp(sign, "nearest", Number(kept & 1n), remainder, divisor);
+    const increment = shouldRoundUp(sign, "nearest", lastBit, remainder, divisor);
+
+    let position;
+
+    if(remainder === 0n) {
+        position = "nothing was discarded";
+    } else if(remainder * 2n < divisor) {
+        position = "the discarded value is below halfway";
+    } else if(remainder * 2n > divisor) {
+        position = "the discarded value is above halfway";
+    } else {
+        position = "the discarded value is exactly halfway";
+    }
 
     // make a string to explain what happened for the steps output
-    const note = remainder === 0n ? "No rounding was needed." : `${increment ? "The kept value was increased" : "The kept value stayed the same"} using nearest ties to even.`;
+    const note = remainder === 0n
+        ? "No bits were discarded, so no rounding was needed."
+        : `${position}. The kept least significant bit is ${lastBit}, so the value was ${increment ? "increased" : "kept"} using nearest ties to even.`;
 
     return {
         // add 1 if the rounding function said yes
@@ -148,7 +202,7 @@ function roundToFloat32(coefficient, power, zeroSign = 0) {
 
     // check if mantissa got too big after rounding and shift it back
     if (mantissa >= TWO24) {
-        mantissa >>= 1n;
+        mantissa = mantissa / 2n;
         exponent++;
     }
 
@@ -177,7 +231,7 @@ function specialCase(a, b, operation) {
         // inf + anything is inf
         if(a.kind === "infinity") return { bits: a.bits, reason: "Operand A is Infinity." };
         if(b.kind === "infinity") return { bits: b.bits, reason: "Operand B is Infinity." };
-        
+
         // not a special case
         return null;
     }
@@ -251,7 +305,9 @@ export function computeArithmetic(first, second, operation) {
     // array to hold the step by step output for the assignment reqs
     const steps = [
         `1. Decode A: ${shownA.binary} = ${shownA.hex}`,
-        `   Decode B: ${shownB.binary} = ${shownB.hex}`
+        `   A = ${scientificForm(a)}`,
+        `   Decode B: ${shownB.binary} = ${shownB.hex}`,
+        `   B = ${scientificForm(b)}`
     ];
 
     let bits;
@@ -264,9 +320,15 @@ export function computeArithmetic(first, second, operation) {
         const commonPower = Math.min(a.power, b.power);
 
         // shift left to align
-        const left = (a.sign ? -a.coefficient : a.coefficient) << BigInt(a.power - commonPower);
-        const right = (b.sign ? -b.coefficient : b.coefficient) << BigInt(b.power - commonPower);
+        const left = alignCoefficient(a, commonPower);
+        const right = alignCoefficient(b, commonPower);
         const exact = left + right;
+
+        const exponentA = unbiasedExponent(a);
+        const exponentB = unbiasedExponent(b);
+        const alignedExponent = Math.max(exponentA, exponentB);
+        const shiftA = alignedExponent - exponentA;
+        const shiftB = alignedExponent - exponentB;
 
         // preserve negative zero only when both inputs are negative zero
         const zeroSign = (a.kind === "zero" && b.kind === "zero" && a.sign === b.sign) ? a.sign : 0;
@@ -276,30 +338,36 @@ export function computeArithmetic(first, second, operation) {
         bits = rounded.bits;
 
         steps.push(
-            `2. Align both values using 2^${commonPower}.`,
-            `3. Add significands: ${left} + ${right} = ${exact}.`,
-            `4. Normalize and round: ${rounded.note}`
+            `2. Compare exponents: A = ${exponentA}, B = ${exponentB}.`,
+            `   Shift A right by ${shiftA} bit(s) and B right by ${shiftB} bit(s) to use exponent ${alignedExponent}.`,
+            `3. Add the aligned significands.`,
+            `4. Normalize and round to nearest, ties to even: ${rounded.note}`
         );
     } else {
         // multiplication is easier, just multiply coefficients and add powers
-        const left= a.sign ? -a.coefficient : a.coefficient;
-        const right = b.sign ? -b.coefficient : b.coefficient;
+        const left= signedCoefficient(a);
+        const right = signedCoefficient(b);
         const power = a.power + b.power;
+
+        const exponentA = unbiasedExponent(a);
+        const exponentB = unbiasedExponent(b);
+        const newExponent = exponentA + exponentB;
 
         // round the exact multiplication result
         const rounded = roundToFloat32(left * right, power);
         bits = rounded.bits;
 
         steps.push(
-            `2. Add powers: ${a.power} + ${b.power} = ${power}.`,
-            `3. Multiply significands: ${left} x ${right} = ${left * right}.`,
-            `4. Normalize and round: ${rounded.note}`
+            `2. Add unbiased exponents: ${exponentA} + ${exponentB} = ${newExponent}.`,
+            `3. Multiply significands: ${significandForm(a)} x ${significandForm(b)}.`,
+            `4. Normalize and round to nearest, ties to even: ${rounded.note}`
         );
     }
 
     // format the final result for the html
     const result = formatResult(bits);
-    steps.push(`5. Final result: ${result.binary} = ${result.hex} = ${result.decimal}`);
+    const finalStep = special ? 3 : 5;
+    steps.push(`${finalStep}. Final result: ${result.binary} = ${result.hex} = ${result.decimal}`);
 
     return { ...result, steps };
 }
