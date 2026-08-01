@@ -390,7 +390,7 @@ function setupArithmeticPage() {
 
         input.addEventListener("input", () => {
             const value = input.value.trim();
-            const looksHex = /^(0x)?[0-9a-f]{1,8}$/i.test(value);
+            const looksHex = /^(0x)?[0-9a-f]{8}$/i.test(value);
 
             hexRadio.disabled = !looksHex;
 
