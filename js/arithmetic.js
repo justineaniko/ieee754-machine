@@ -107,7 +107,7 @@ function parseOperand(raw) {
 
     // if its not a valid decimal number at this point, throw an error
     if(!/^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(text)) {
-        throw new Error(`"${raw}" is not a valid decimal or IEEE hexadecimal value.`);
+        throw new Error(`"${raw}" is not a valid decimal or IEEE hexadecimal value. Only letters A-F are allowed. Please also ensure that you entered 8 digits for Hex.`);
     }
 
     // if it survived all that, it must be a normal decimal number. use the imported function to convert it.
@@ -403,14 +403,25 @@ function setupArithmeticPage() {
     wireFormatToggle("op-1", "op1-format-hex", "op1-format-decimal");
     wireFormatToggle("op-2", "op2-format-hex", "op2-format-decimal");
 
+    //sets hex just in case only numbers are entered
+    function prepareOperand(rawValue, hexRadioId) {
+        const hexRadio = byId(hexRadioId);
+        const value = rawValue.trim();
+
+        if (hexRadio && hexRadio.checked && !/^0x/i.test(value)) {
+            return "0x" + value;
+        }
+        return value;
+    }
+
 
     // listen for the click event on the button
     button.addEventListener("click", () => {
         try {
             // grab the values from the dom and run the main math function
             const result = computeArithmetic(
-                byId("op-1").value,
-                byId("op-2").value,
+                prepareOperand(byId("op-1").value, "op1-format-hex"),
+                prepareOperand(byId("op-2").value, "op2-format-hex"),
                 byId("operation").value
             );
 
