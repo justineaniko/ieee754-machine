@@ -46,9 +46,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-//   2. Split the mantissa into "kept" bits and "dropped" bits
-//   3. Look at the guard bit / sticky bit to decide each rounding rule
-//   4. Turn the rounded bits back into a readable string
 function roundNumber(rawValue, format, digits) {
 
     // parse input into sign, exponent, and mantissa
