@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
  * Converts a decimal number to its IEEE 754 32-bit single-precision format.
  * Detects special cases by analyzing the resulting exponents and mantissas.
  */
-function convertDecimalToIEEE754(input) {
+export function convertDecimalToIEEE754(input) {
     // Parse input to standard float
     const value = parseFloat(input);
 

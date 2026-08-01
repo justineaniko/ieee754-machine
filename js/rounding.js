@@ -81,6 +81,8 @@ function roundNumber(rawValue, format, digits) {
     // Chop/Truncate: remove extra bits w/o adjusting to round
     const chopBits = { bits: keptBits, carry: false };
 
+    let nearestBits;
+
     // Round to nearest, ties to even: vvv
     // - if guard bit = 0, chop
     // - if guard bit = 1 & sticky bit = 1, round up
@@ -246,4 +248,39 @@ function buildOutputString(sign, exponent, roundedResult) {
     const signSymbol = (sign === 1) ? "-" : "";
 
     return signSymbol + "1." + finalBits + " x 2^" + finalExponent + "  (= " + decimalValue + ")";
+}
+
+// this function checks whether the discarded bits require an increment.
+export function shouldRoundUp(
+    sign,
+    method,
+    keptLSB,
+    remainder,
+    divisor
+) {
+    if (
+        remainder === 0n ||
+        method === "chop"
+    ) {
+        return false;
+    }
+
+    if (method === "up") {
+        return sign === 0;
+    }
+
+    if (method === "down") {
+        return sign === 1;
+    }
+
+    const twice =
+        remainder * 2n;
+
+    return (
+        twice > divisor ||
+        (
+            twice === divisor &&
+            keptLSB === 1
+        )
+    );
 }

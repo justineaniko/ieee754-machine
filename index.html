@@ -80,10 +80,10 @@
         <h3>Arithmetics</h3>
 
         <label for="op-1">Operand 1</label>
-        <input type="number" id="op-1" placeholder="Operand 1">
+        <input type="text" id="op-1" placeholder="Decimal or IEEE Hexadecimal">
 
         <label for="op-2">Operand 2</label>
-        <input type="number" id="op-2" placeholder="Operand 2">
+        <input type="text" id="op-2" placeholder="Decimal or IEEE Hexadecimal">
 
         <label for="operation">Operation: </label>
         <select id="operation">
@@ -92,6 +92,9 @@
         </select>
 
         <button id="compute-btn">Compute</button>
+
+        <p>Step-by-step:</p>
+        <pre id="steps"></pre>
 
         <div class = "output">
             <p> Result (Binary): <span id = "binary"></span></p>
@@ -102,8 +105,7 @@
         <a href="#home" class="back-link">&uarr; Back to Home</a>
     </div>
 
-    <script src="js/convertDecimal.js"></script>
-    <script src="js/rounding.js"></script>
+    <script type="module" src="js/arithmetic.js"></script>
 
 </body>
 </html>
