@@ -1,63 +1,100 @@
+document.addEventListener("DOMContentLoaded", () => {
+    const decimalInput = document.getElementById("decimal-input");
+    const convertBtn = document.getElementById("convert-btn");
+
+    const signOutput = document.getElementById("sign-output");
+    const exponentOutput = document.getElementById("exponent-output");
+    const mantissaOutput = document.getElementById("mantissa-output");
+    const binaryOutput = document.getElementById("binary-output");
+    const hexOutput = document.getElementById("hex-output");
+
+    convertBtn.addEventListener("click", () => {
+        const rawValue = decimalInput.value.trim();
+
+        if (rawValue === "") {
+            alert("Please enter a decimal number first.");
+            return;
+        }
+
+        try {
+            // Convert the value 
+            const result = convertDecimalToIEEE754(rawValue);
+
+            // Update the UI elements
+            signOutput.textContent = result.sign;
+            exponentOutput.textContent = result.binary.exponent;
+            mantissaOutput.textContent = result.binary.mantissa;
+            binaryOutput.textContent = result.binary.spaced;
+
+            // Display classification next to Hex output IF it is a special case
+            if (result.classification !== "Normalized Number") {
+                hexOutput.textContent = `${result.hex} (${result.classification})`;
+            } else {
+                hexOutput.textContent = result.hex;
+            }
+
+        } catch (error) {
+            alert("Error during conversion: " + error.message);
+        }
+    });
+});
+
 /**
  * Converts a decimal number to its IEEE 754 32-bit single-precision format.
- * 
- * @param {number|string} input - The decimal value to convert
- * @returns {Object} An object containing the binary parts, hex representation, and classification.
+ * Detects special cases by analyzing the resulting exponents and mantissas.
  */
-function convertDecimal(input) {
-    // Parse input to a number. If it's already a number, it stays as number
-    const value = typeof input === 'string' ? parseFloat(input) : input;
+function convertDecimalToIEEE754(input) {
+    // Parse input to standard float
+    const value = parseFloat(input);
 
-    // Checks for invalid input
-    if (isNaN(value) && input !== 'NaN' && typeof input !== 'number') {
+    if (isNaN(value)) {
         throw new Error("Invalid numeric input");
     }
 
-    // Use a shared memory buffer to interpret the 32-bit float representation as an unsigned integer.
+    // Allocate 4 bytes of memory to view it as a 32-bit float
     const buffer = new ArrayBuffer(4);
     const floatView = new Float32Array(buffer);
     const uintView = new Uint32Array(buffer);
 
-    floatView[0] = value; // Write float representation to the buffer
-    const bits = uintView[0]; // Read those 32 bits as an integer
+    // Assign a value. If the input exceeds float32 ranges, 
+    // JavaScript already automatically handles the overflow (Infinity) or underflow (Denormalized/0).
+    floatView[0] = value;
+    const bits = uintView[0];
 
-    // Extract components using bitwise shifts and masks
+    // bitwise shifts and masks
     const sign = (bits >>> 31) & 1;
     const exponent = (bits >>> 23) & 0xFF;
     const mantissa = bits & 0x7FFFFF;
 
-    // Helper for padding binary/hex representations with zeros
+    // Determines specific IEEE 754 classification based on specifications
+    let classification = "Normalized Number";
+
+    if (exponent === 0xFF) {
+        if (mantissa === 0) {
+            classification = (sign === 1) ? "-Infinity" : "+Infinity";
+        } else {
+            classification = "NaN (Not a Number)";
+        }
+    } else if (exponent === 0) {
+        if (mantissa === 0) {
+            classification = (sign === 1) ? "Negative Zero (-0.0)" : "Positive Zero (+0.0)";
+        } else {
+            classification = "Denormalized Number";
+        }
+    }
+
+    // Helper function for padding binary structures
     const pad = (str, targetLength) => str.padStart(targetLength, '0');
 
-    // Format representations
-    const signStr = sign.toString(2);
+    const signStr = sign.toString();
     const exponentStr = pad(exponent.toString(2), 8);
     const mantissaStr = pad(mantissa.toString(2), 23);
     const hexStr = "0x" + pad(bits.toString(16).toUpperCase(), 8);
 
-    // Determine classification
-    let classification = "Normalized Number";
-    if (Number.isNaN(value)) {
-        classification = "NaN (Not a Number)";
-    } else if (value === Infinity) {
-        classification = "+Infinity";
-    } else if (value === -Infinity) {
-        classification = "-Infinity";
-    } else if (value === 0) {
-        classification = (sign === 1) ? "Negative Zero (-0.0)" : "Positive Zero (+0.0)";
-    } else if (exponent === 0 && mantissa !== 0) {
-        classification = "Subnormal / Denormalized Number";
-    }
-
-    // Return structured data
     return {
-        originalValue: floatView[0], // Float32 rounded version of input
+        sign: signStr,
         classification: classification,
-        sign: sign,
-        exponent: exponent,
-        mantissa: mantissa,
         binary: {
-            sign: signStr,
             exponent: exponentStr,
             mantissa: mantissaStr,
             spaced: `${signStr} ${exponentStr} ${mantissaStr}`
