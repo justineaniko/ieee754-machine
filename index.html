@@ -11,7 +11,7 @@
 <body>
     <div class="header">
         <h1>BitByBit</h1>
-        <h2>An IEEE754 Converter</h2>
+        <h2>An IEEE-754 Converter</h2>
     </div>
 
     <nav class="navbar">
@@ -23,13 +23,12 @@
 
     <div class="home" id="home">
         <h2>Welcome to BitByBit</h2>
-        <p>This tool allows you to convert decimal numbers to IEEE754 format and vice versa. You can also explore rounding methods and perform arithmetic operations on IEEE754 numbers.</p>
+        <p>BitByBit is a program that allows you to convert decimal numbers to IEEE-754 format. You can also explore rounding methods and perform arithmetic operations on IEEE-754 numbers.</p>
         <p>To get started, select any of the three buttons below or pick one from the headers tab.</p>
         <a href="#d_to_b" class="home-btn">Convert Decimal to Binary</a>
         <a href="#rounding" class="home-btn">Rounding</a>
         <a href="#arithmetic" class="home-btn">Arithmetic</a>
         <p><strong>What is IEEE 754?</strong> It's the standard format computers use to represent floating-point numbers in binary, using a sign bit, exponent, and mantissa.</p>
-        <p><em>Supports:</em> negative numbers, decimals, and special values (NaN, Infinity, ±0, denormals).</p>
     </div>
 
     <div class="d_to_b" id = "d_to_b">
@@ -37,6 +36,7 @@
 
         <label for="decimal-input">Enter decimal number:</label>
         <input type="number" id="decimal-input" placeholder="Decimal number">
+
         <button id="convert-btn">Convert</button>
 
         <div class = "output">
@@ -105,6 +105,8 @@
         <a href="#home" class="back-link">&uarr; Back to Home</a>
     </div>
 
+    <script type="module" src="js/convertDecimal.js"></script>
+    <script type="module" src="js/rounding.js"></script>
     <script type="module" src="js/arithmetic.js"></script>
 
 </body>

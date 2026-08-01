@@ -14,6 +14,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const roundDownOutput = document.getElementById("round-down");
     const roundNearestOutput = document.getElementById("round-nearest");
 
+    roundingInput.addEventListener("input", () => {
+        const value = roundingInput.value.trim();
+        const looksBinary = /^-?[01]+(\.[01]+)?$/.test(value);
+
+        binaryRadio.disabled = !looksBinary;
+
+        if (!looksBinary && binaryRadio.checked) {
+            decimalRadio.checked = true;
+        }
+    });
+
     roundBtn.addEventListener("click", () => {
         const rawValue = roundingInput.value.trim();
         const digits = parseInt(digitsInput.value, 10);
@@ -137,7 +148,7 @@ function roundNumber(rawValue, format, digits) {
     // END OF ROUNDING METHODS =====
 }
 
-// Adds 1 to the end of a bit string
+// adds 1 to the end of a bit string
 // "0101" + 1 = "0110"
 // "1111" + 1 = "0000" with a carry left over (OVERFLOW)
 function addOneBit(bitString) {
@@ -158,7 +169,7 @@ function addOneBit(bitString) {
     return { bits: bitArray.join(""), carry: carry === 1 };
 }
 
-// Turns a binary string like "-1010.101" into sign, exponent, mantissa bits
+// turns a binary string like "-1010.101" into sign, exponent, mantissa bits
 function parseBinaryInput(input) {
     if (!/^-?[01]+(\.[01]+)?$/.test(input)) {
         throw new Error("That's not a valid binary number (only 0s, 1s, and one '.' allowed)");
@@ -173,7 +184,7 @@ function parseBinaryInput(input) {
     return normalizeToScientificForm(sign, wholePart, fractionPart);
 }
 
-// Turns a decimal string like "-10.75" into sign, exponent, mantissa bits
+// turns a decimal string like "-10.75" into sign, exponent, mantissa bits
 function parseDecimalInput(input) {
     const value = parseFloat(input);
     if (isNaN(value)) {
@@ -201,7 +212,7 @@ function parseDecimalInput(input) {
     return normalizeToScientificForm(sign, wholeBits, fractionBits);
 }
 
-// Takes the whole number bits and fraction bits and finds where the FIRST 1 is
+// takes the whole number bits and fraction bits and finds where the FIRST 1 is
 function normalizeToScientificForm(sign, wholeBits, fractionBits) {
     const allBits = wholeBits + fractionBits;
     const pointPosition = wholeBits.length; // where binary point sits
@@ -220,7 +231,7 @@ function normalizeToScientificForm(sign, wholeBits, fractionBits) {
     return { isZero: false, sign, exponent, mantissaBits };
 }
 
-// Turns mantissa bits, exponent -> decimal for display
+// turns mantissa bits, exponent -> decimal for display
 function reconstructDecimalValue(bits, exponent) {
     let fractionValue = 0;
     for (let i = 0; i < bits.length; i++) {

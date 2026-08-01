@@ -17,16 +17,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
-            // Convert the value 
             const result = convertDecimalToIEEE754(rawValue);
 
-            // Update the UI elements
             signOutput.textContent = result.sign;
             exponentOutput.textContent = result.binary.exponent;
             mantissaOutput.textContent = result.binary.mantissa;
             binaryOutput.textContent = result.binary.spaced;
 
-            // Display classification next to Hex output IF it is a special case
             if (result.classification !== "Normalized Number") {
                 hexOutput.textContent = `${result.hex} (${result.classification})`;
             } else {
@@ -39,34 +36,24 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-/**
- * Converts a decimal number to its IEEE 754 32-bit single-precision format.
- * Detects special cases by analyzing the resulting exponents and mantissas.
- */
 export function convertDecimalToIEEE754(input) {
-    // Parse input to standard float
     const value = parseFloat(input);
 
     if (isNaN(value)) {
         throw new Error("Invalid numeric input");
     }
 
-    // Allocate 4 bytes of memory to view it as a 32-bit float
     const buffer = new ArrayBuffer(4);
     const floatView = new Float32Array(buffer);
     const uintView = new Uint32Array(buffer);
 
-    // Assign a value. If the input exceeds float32 ranges, 
-    // JavaScript already automatically handles the overflow (Infinity) or underflow (Denormalized/0).
     floatView[0] = value;
     const bits = uintView[0];
 
-    // bitwise shifts and masks
     const sign = (bits >>> 31) & 1;
     const exponent = (bits >>> 23) & 0xFF;
     const mantissa = bits & 0x7FFFFF;
 
-    // Determines specific IEEE 754 classification based on specifications
     let classification = "Normalized Number";
 
     if (exponent === 0xFF) {
@@ -83,7 +70,6 @@ export function convertDecimalToIEEE754(input) {
         }
     }
 
-    // Helper function for padding binary structures
     const pad = (str, targetLength) => str.padStart(targetLength, '0');
 
     const signStr = sign.toString();
