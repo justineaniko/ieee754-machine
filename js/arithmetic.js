@@ -400,8 +400,8 @@ function setupArithmeticPage() {
         });
     }
 
-    wireFormatToggle("op-1", "op1-hex", "op1-decimal");
-    wireFormatToggle("op-2", "op2-hex", "op2-decimal");
+    wireFormatToggle("op-1", "opt1-hex", "opt1-decimal");
+    wireFormatToggle("op-2", "opt2-hex", "opt2-decimal");
 
     //sets hex just in case only numbers are entered
     function prepareOperand(rawValue, hexRadioId) {
@@ -420,8 +420,8 @@ function setupArithmeticPage() {
         try {
             // grab the values from the dom and run the main math function
             const result = computeArithmetic(
-                prepareOperand(byId("op-1").value, "op1-hex"),
-                prepareOperand(byId("op-2").value, "op2-hex"),
+                prepareOperand(byId("op-1").value, "opt1-hex"),
+                prepareOperand(byId("op-2").value, "opt2-hex"),
                 byId("operation").value
             );
 
