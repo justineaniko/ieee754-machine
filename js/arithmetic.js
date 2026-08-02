@@ -282,12 +282,19 @@ function formatResult(bits) {
     const value = view.getFloat32(0);
 
     // format the decimal string, dealing with edge cases JS is weird about
-    let decimal = String(value);
+    let decimal;
 
     if(Number.isNaN(value)) decimal = "NaN";
     else if (value === Infinity) decimal = "+Infinity";
     else if (value === -Infinity) decimal = "-Infinity";
     else if(Object.is(value, -0)) decimal = "-0";
+    else if(Number.isInteger(value)) decimal = String(value);
+    else if(Math.abs(value) < 0.000001 || Math.abs(value) >= 1000000000) {
+    decimal = value.toExponential(6).replace(/\.?0+e/, "e");
+    }
+    else {
+    decimal = parseFloat(value.toFixed(6)).toString();
+    }
 
     return {
         // slice the binary string to look nice with spaces
