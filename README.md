@@ -13,10 +13,10 @@ The application demonstrates how a 32-bit floating-point value is represented an
 
 ## Project links
 
-- **Live website:** _Add deployment link here_
-- **Video walkthrough:** _Add the 5â€“8 minute YouTube link here_
+- **Live website:** 
+- **Video walkthrough:** 
 - **Complete test-case matrix:** [TEST_CASES.md](TEST_CASES.md)
-- **Screenshots:** _Add the `screenshots/` folder link after capturing the final outputs_
+- **Screenshots:** 
 
 ## Features
 
