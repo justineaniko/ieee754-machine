@@ -78,13 +78,29 @@ function decode(bits) {
     };
 }
 
-// this function takes what the user typed in and figures out if its hex, nan, infinity or normal decimal. it then converts it to bits and calls decode to output the parsed object.
-function parseOperand(raw) {
+// this function takes what the user typed in and converts it based on the selected decimal or hexadecimal input type. it then calls decode and outputs the parsed object.
+function parseOperand(raw, inputType) {
     // remove extra spaces from input
     const text= raw.trim();
 
     if (!text) {
         throw new Error("Both operands are required.");
+    }
+
+    if(inputType === "hex") {
+        // remove 0x if the user included it even though it is not required
+        const hex = text.replace(/^0x/i, "");
+
+        // hexadecimal input must contain exactly 8 hexadecimal digits
+        if(!/^[0-9a-f]{8}$/i.test(hex)) {
+            throw new Error(`"${raw}" must contain exactly 8 hexadecimal digits.`);
+        }
+
+        return decode(parseInt(hex, 16) >>> 0);
+    }
+
+    if(inputType !== "decimal") {
+        throw new Error("Invalid operand input type.");
     }
 
     // check if user literally typed nan
@@ -100,14 +116,9 @@ function parseOperand(raw) {
         return decode(0xFF800000);
     }
 
-    // check if its a hex string starting with 0x
-    if (/^0x[0-9a-f]{8}$/i.test(text)) {
-        return decode(parseInt(text.slice(2), 16) >>> 0);
-    }
-
     // if its not a valid decimal number at this point, throw an error
     if(!/^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(text)) {
-        throw new Error(`"${raw}" is not a valid decimal or IEEE hexadecimal value. Only letters A-F are allowed. Please also ensure that you entered 8 digits for Hex.`);
+        throw new Error(`"${raw}" is not a valid decimal value.`);
     }
 
     // if it survived all that, it must be a normal decimal number. use the imported function to convert it.
@@ -288,15 +299,15 @@ function formatResult(bits) {
 }
 
 // this function does the main math for float32 addition or multiplication. it aligns exponents, adds or multiplies the significands, rounds it, and saves every step. outputs the final formatted result and the steps array.
-export function computeArithmetic(first, second, operation) {
+export function computeArithmetic(first, second, operation, firstType, secondType) {
     // basic error checking
     if (operation !== "add" && operation !== "multiply") {
         throw new Error("Invalid arithmetic operation.");
     }
 
     // parse both inputs
-    const a = parseOperand(first);
-    const b= parseOperand(second);
+    const a = parseOperand(first, firstType);
+    const b= parseOperand(second, secondType);
 
     // check if we can skip the math cuz of special cases
     const special = specialCase(a, b, operation);
@@ -381,48 +392,39 @@ function setupArithmeticPage() {
 
     if(!button) return;
 
-    // this function disables the hex radio button if the input doesnt look like a hex string. it also switches to decimal if the user typed garbage and hex was selected.
-    function wireFormatToggle(inputId, hexRadioId, decimalRadioId) {
+    // this function changes the placeholder based on the selected input type.
+    function wireFormatToggle(inputId, radioName) {
         const input = byId(inputId);
-        const hexRadio = byId(hexRadioId);
-        const decimalRadio = byId(decimalRadioId);
-        if (!input || !hexRadio || !decimalRadio) return;
+        const radios = document.querySelectorAll(`input[name="${radioName}"]`);
+        if (!input || !radios.length) return;
 
-        input.addEventListener("input", () => {
-            const value = input.value.trim();
-            const looksHex = /^(0x)?[0-9a-f]{8}$/i.test(value);
+        const updatePlaceholder = () => {
+            const selected = document.querySelector(`input[name="${radioName}"]:checked`);
+            input.placeholder = selected && selected.value === "hex"
+                ? "Enter 8-Digit IEEE-754 Hexadecimal"
+                : "Enter decimal value";
+        };
 
-            hexRadio.disabled = !looksHex;
-
-            if (!looksHex && hexRadio.checked) {
-                decimalRadio.checked = true;
-            }
-        });
+        radios.forEach(radio => radio.addEventListener("change", updatePlaceholder));
+        updatePlaceholder();
     }
 
-    wireFormatToggle("op-1", "opt1-hex", "opt1-decimal");
-    wireFormatToggle("op-2", "opt2-hex", "opt2-decimal");
-
-    //sets hex just in case only numbers are entered
-    function prepareOperand(rawValue, hexRadioId) {
-        const hexRadio = byId(hexRadioId);
-        const value = rawValue.trim();
-
-        if (hexRadio && hexRadio.checked && !/^0x/i.test(value)) {
-            return "0x" + value;
-        }
-        return value;
-    }
-
+    wireFormatToggle("op-1", "opt1-format");
+    wireFormatToggle("op-2", "opt2-format");
 
     // listen for the click event on the button
     button.addEventListener("click", () => {
         try {
             // grab the values from the dom and run the main math function
+            const firstType = document.querySelector('input[name="opt1-format"]:checked').value;
+            const secondType = document.querySelector('input[name="opt2-format"]:checked').value;
+
             const result = computeArithmetic(
-                prepareOperand(byId("op-1").value, "opt1-hex"),
-                prepareOperand(byId("op-2").value, "opt2-hex"),
-                byId("operation").value
+                byId("op-1").value,
+                byId("op-2").value,
+                byId("operation").value,
+                firstType,
+                secondType
             );
 
             // update the dom text with the results
