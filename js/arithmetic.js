@@ -15,9 +15,15 @@ function signedCoefficient(number) {
     return number.sign ? -number.coefficient : number.coefficient;
 }
 
-// this function moves a coefficient to the common power used during addition.
+// this function moves a coefficient to the common power used during addition and discards bits that move past the 24 bit significand.
 function alignCoefficient(number, commonPower) {
-    return signedCoefficient(number) * powerOfTwo(number.power - commonPower);
+    const difference = commonPower - number.power;
+
+    if(difference <= 0) {
+        return signedCoefficient(number) * powerOfTwo(-difference);
+    }
+
+    return signedCoefficient(number) / powerOfTwo(difference);
 }
 
 // this function gets the actual unbiased exponent used in binary scientific notation.
@@ -337,9 +343,9 @@ export function computeArithmetic(first, second, operation, firstType, secondTyp
         steps.push(`2. Special case: ${special.reason}`);
     } else if(operation === "add") {
         // for addition we gotta align the decimal points basically
-        const commonPower = Math.min(a.power, b.power);
+        const commonPower = Math.max(a.power, b.power);
 
-        // shift left to align
+        // shift right to align and discard bits that no longer fit
         const left = alignCoefficient(a, commonPower);
         const right = alignCoefficient(b, commonPower);
         const exact = left + right;
