@@ -7,6 +7,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const roundingInput = document.getElementById("rounding-input");
     const digitsInput = document.getElementById("digits-input");
     const formatRadios = document.getElementsByName("rounding-format"); // decimal or binary
+    const decimalRadio = document.querySelector('input[name="rounding-format"][value="decimal"]');
+    const binaryRadio = document.querySelector('input[name="rounding-format"][value="binary"]');
     const roundBtn = document.getElementById("round-btn");
 
     const chopOutput = document.getElementById("chop");
