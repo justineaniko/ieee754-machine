@@ -10,8 +10,8 @@ The application demonstrates how a 32-bit floating-point value is represented an
 
 ## Project links
 
-- **Live website:** [BitByBit IEEE-754 Machine](https://justineaniko.github.io/ieee754-machine/)
-- **Video walkthrough:** Not uploaded yet
+- **Live website:** [BitByBit IEEE-754 Machine](https://bitbybit-ieee754.netlify.app)
+- **Video walkthrough:** [Video](https://youtu.be/daECBjG2fL8?si=mHb-wwAh0pfWSC_9)
 - **Complete test-case matrix:** [TEST_CASES.md](TEST_CASES.md)
 - **Screenshots:** [Test evidence](screenshots/)
 
